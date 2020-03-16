@@ -337,7 +337,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER , STM32F429_439xx,</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\FWLIB-Template;..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\Libraries\CMSIS\Include;..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\User;..\User\led;..\User\usart;..\User\gsm_gprs;..\User\systick;..\User\fatfs;..\User\gps</IncludePath>
+              <IncludePath>..\..\FWLIB-Template;..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\Libraries\CMSIS\Include;..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\User;..\User\led;..\User\usart;..\User\gsm_gprs;..\User\systick;..\User\fatfs;..\User\gps;..\User\nema_decode\include\nmea</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -711,6 +711,11 @@
               <FileName>bsp_gps_usart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\User\gps\bsp_gps_usart.c</FilePath>
+            </File>
+            <File>
+              <FileName>nema_decode.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\gps\nema_decode.c</FilePath>
             </File>
           </Files>
         </Group>
