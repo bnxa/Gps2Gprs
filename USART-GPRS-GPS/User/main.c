@@ -29,13 +29,14 @@ int main(void)
 	uint8_t testCard =0;
 	uint8_t index =0;
 	
+	
  	/*配置USART*/
 	Debug_USART_Config(); 
 	//初始化系统定时器
 	SysTick_Init();
 	
 	GPS_Config();
- 
+  
 	
 	printf("\r\n\r\n");
 	printf("\r\n\r\n");
