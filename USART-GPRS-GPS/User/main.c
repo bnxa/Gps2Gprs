@@ -45,13 +45,14 @@ int main(void)
 	printf("\r\n***********************GSM模块TCP收发示例程序***********************\r\n");
 	printf("\r\n********************************************************************\r\n");
 	
+	printf("\r\n>%d 正在等待GSM模块初始化。。。\r\n",index++);
 	while(gsm_init()!= GSM_TRUE)
 	{
 		printf("\r\n模块响应测试不正常！!");
 		printf("\r\n若模块相应一直不正常，请检查模块连接线和电源");
 	}
 	
-	printf("\r\n>%d 正在等待GSM模块初始化。。。\r\n",index++);
+	printf("\r\n>%d 正在检测电话卡。。。\r\n",index++);
 	while(IsInsertCard() != GSM_TRUE)
 	{
 		if(++testCard>20)
