@@ -37,6 +37,7 @@ int main(void)
 	
 	GPS_Config();
   
+	while(1);
 	
 	printf("\r\n\r\n");
 	printf("\r\n\r\n");
