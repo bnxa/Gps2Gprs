@@ -51,6 +51,7 @@
 ".\objects\bsp_gsm_gprs.o"
 ".\objects\bsp_gsm_usart.o"
 ".\objects\bsp_gps_usart.o"
+".\objects\nema_decode.o"
 --library_type=microlib --strict --scatter ".\Objects\´®¿ÚÍ¨ÐÅ.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

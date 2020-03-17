@@ -4,6 +4,16 @@
 //DMA接收缓冲区
 uint8_t gps_rbuff[GPS_RBUFF_SIZE];
 
+uint8_t gps_rbuff_GNGGA[GPS_GNGGA_SIZE]; //GPS/北斗定位信息
+uint8_t gps_rbuff_GNGSA[GPS_GNGSA_SIZE]; //当前卫星信息
+uint8_t gps_rbuff_GPGSV[GPS_GPGSV_SIZE];	//可见 GPS 卫星信息 
+uint8_t gps_rbuff_BDGSV[GPS_BDGSV_SIZE];	//可见北斗卫星信息
+uint8_t gps_rbuff_GNRMC[GPS_GNRMC_SIZE];	//推荐定位信息
+uint8_t gps_rbuff_GNVTG[GPS_GNVTG_SIZE];	//地面速度信息
+uint8_t gps_rbuff_GNGLL[GPS_GNGLL_SIZE];	//大地坐标信息
+uint8_t gps_rbuff_GNZDA[GPS_GNZDA_SIZE];	//当前时间(UTC 1 )信息 
+
+
 //DMA传输结束标志
 __IO uint8_t GPS_TransferEnd = 0, GPS_HalfTransferEnd = 0;
 
@@ -100,7 +110,7 @@ static void GPS_DMA_Config(void)
 	//内存数据单位
 	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
 	//DMA模式：不断循环
-	DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
+	DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;// DMA_Mode_Circular; //
 	//优先级 中
 	DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;
 	//禁用FIFO
@@ -118,7 +128,8 @@ static void GPS_DMA_Config(void)
 	GPS_Interrupt_Config();
 	
 	//配置DMA发送完成后产生中断
-	DMA_ITConfig(GPS_USART_DMA_STREAM,DMA_IT_HT|DMA_IT_TC,ENABLE);
+//	DMA_ITConfig(GPS_USART_DMA_STREAM,DMA_IT_HT|DMA_IT_TC,ENABLE);
+	DMA_ITConfig(GPS_USART_DMA_STREAM,DMA_IT_TC,ENABLE);
 	
 	//DMA 使能
 	DMA_Cmd(GPS_USART_DMA_STREAM,ENABLE);
@@ -142,15 +153,97 @@ void GPS_Config(void)
 //GPS DMA中断服务函数
 void GPS_ProcessDMAIRQ(void)
 { 
-	if(DMA_GetITStatus(GPS_USART_DMA_STREAM,GPS_DMA_IT_HT))	//DMA半传输完成
-	{
-		GPS_HalfTransferEnd =1; //设置半传输完成标志位
-		DMA_ClearITPendingBit(GPS_USART_DMA_STREAM,GPS_DMA_IT_HT);		
-	} 
-	else if(DMA_GetITStatus(GPS_USART_DMA_STREAM,GPS_DMA_IT_TC))	//DMA 传输完成
+//	if(DMA_GetITStatus(GPS_USART_DMA_STREAM,GPS_DMA_IT_HT))	//DMA半传输完成
+//	{
+//		GPS_HalfTransferEnd =1; //设置半传输完成标志位
+//		DMA_ClearITPendingBit(GPS_USART_DMA_STREAM,GPS_DMA_IT_HT);		
+//	} 
+//	else 
+		
+	if(DMA_GetITStatus(GPS_USART_DMA_STREAM,GPS_DMA_IT_TC))	//DMA 传输完成
 	{
 		GPS_TransferEnd =1;
 		DMA_ClearITPendingBit(GPS_USART_DMA_STREAM,GPS_DMA_IT_TC);
-//		printf("%s",gps_rbuff);
+		GPS_DEBUG("  DMA 传输完成");
+		GPS_DEBUG("%s",gps_rbuff);
+		nema_decode();
+		
 	}
 }
+
+//1 清空 GNGGA 数组
+void Clear_GNGGA(void)
+{
+	
+	uint16_t i=GPS_GNGGA_SIZE+1; 
+	while(i)
+		gps_rbuff_GNGGA[--i]=0;
+}
+
+//2 清空 GNGSA 数组
+void Clear_GNGSA(void)
+{
+	
+	uint16_t i=GPS_GNGSA_SIZE+1; 
+	while(i)
+		gps_rbuff_GNGSA[--i]=0;
+}
+
+//3 清空 GPGSV 数组
+void Clear_GPGSV(void)
+{
+	
+	uint16_t i=GPS_GPGSV_SIZE+1; 
+	while(i)
+		gps_rbuff_GPGSV[--i]=0;
+}
+
+//4 清空 BDGSV 数组
+void Clear_BDGSV(void)
+{
+	
+	uint16_t i=GPS_BDGSV_SIZE+1; 
+	while(i)
+		gps_rbuff_BDGSV[--i]=0;
+}
+
+//5 清空 GNRMC 数组
+void Clear_GNRMC(void)
+{
+	
+	uint16_t i=GPS_GNRMC_SIZE+1; 
+	while(i)
+		gps_rbuff_GNRMC[--i]=0;
+}
+
+//6 清空 GNVTG 数组
+void Clear_GNVTG(void)
+{
+	
+	uint16_t i=GPS_GNVTG_SIZE+1; 
+	while(i)
+		gps_rbuff_GNVTG[--i]=0;
+}
+
+//7 清空 GNGLL 数组
+void Clear_GNGLL(void)
+{
+	
+	uint16_t i=GPS_GNGLL_SIZE+1; 
+	while(i)
+		gps_rbuff_GNGLL[--i]=0;
+}
+
+//8 清空 GNZDA 数组
+void Clear_GNZDA(void)
+{
+	
+	uint16_t i=GPS_GNZDA_SIZE+1; 
+	while(i)
+		gps_rbuff_GNZDA[--i]=0;
+}
+
+
+
+
+

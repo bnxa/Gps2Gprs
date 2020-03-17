@@ -72,6 +72,26 @@ uint8_t gsm_cmd(char *cmd,char *reply,uint32_t waittime)
 	return gsm_cmd_check(reply); //对接收数据进行处理
 }
 
+
+uint8_t gsm_Reset(void)
+{
+	char *redata;
+	uint8_t len;
+	
+	GSM_CLEAN_RX(); //清空接收缓冲区数据 
+	GSM_USART_Config(); //初始化串口
+	 
+	if(gsm_cmd("ATE1&W\r","OK",1000) != GSM_TRUE)
+		return GSM_FALSE;
+	
+	redata = GSM_RX(len);
+	 
+	if(len == 0)
+		return GSM_FALSE;
+	else
+		return GSM_TRUE;
+}
+
 //初始化并检测模块
 //0 成功
 //1 失败
@@ -286,7 +306,7 @@ uint8_t gsm_gprs_send(const char *str)
 //使用GPRS发送数据，发送前要先建立TCP/UDP连接
 //失败				GSM_FALSE
 //成功				GSM_TRUE
-uint8_t gsm_gprs_send2(char *str)
+uint8_t gsm_gprs_send_GpsCmd(uint8_t *str)
 {
 	char end = 0x1A;
 	uint8_t testSend=0;

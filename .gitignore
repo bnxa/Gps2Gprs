@@ -9,3 +9,10 @@
 *.htm
 *.__i
 *.map
+*.d
+*.hex
+*.hex
+USART-GPRS-GPS/Project/Objects/串口通信.hex
+*.hex
+*.TMP
+*.lnp

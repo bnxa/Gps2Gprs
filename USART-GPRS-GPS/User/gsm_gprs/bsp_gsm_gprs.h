@@ -61,6 +61,8 @@ typedef enum{
 
 uint8_t gsm_cmd (char *cmd,char *reply,uint32_t waittime);
 
+uint8_t gsm_Reset(void);
+																
 uint8_t gsm_init(void);
 																
 uint8_t IsInsertCard(void);
@@ -74,7 +76,7 @@ uint8_t gsm_gprs_init(void);
 uint8_t gsm_gprs_tcp_link(char *localport,char *serverip,char *serverport);
 
 uint8_t gsm_gprs_send(const char *str);
-uint8_t gsm_gprs_send2(char *str);
+uint8_t gsm_gprs_send_GpsCmd(uint8_t *str);
 
 uint8_t PostGPRS(void);
 	

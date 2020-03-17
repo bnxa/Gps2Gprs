@@ -15,6 +15,14 @@ const char *TESTBUFF2="\r\n 2. SIM800A GSM模块TCP数据上传功能测试";
 
 //static void Show_Message(void);
 extern uint8_t gps_rbuff[GPS_RBUFF_SIZE];
+extern uint8_t gps_rbuff_BDGSV[GPS_BDGSV_SIZE];	//可见北斗卫星信息 
+extern uint8_t gps_rbuff_GNGGA[GPS_GNGGA_SIZE]; //GPS/北斗定位信息
+extern uint8_t gps_rbuff_GNGSA[GPS_GNGSA_SIZE]; //当前卫星信息
+extern uint8_t gps_rbuff_GPGSV[GPS_GPGSV_SIZE];	//可见 GPS 卫星信息 
+extern uint8_t gps_rbuff_GNRMC[GPS_GNRMC_SIZE];	//推荐定位信息
+extern uint8_t gps_rbuff_GNVTG[GPS_GNVTG_SIZE];	//地面速度信息
+extern uint8_t gps_rbuff_GNGLL[GPS_GNGLL_SIZE];	//大地坐标信息
+extern uint8_t gps_rbuff_GNZDA[GPS_GNZDA_SIZE];	//当前时间(UTC 1 )信息 
 
 //系统软件复位
 void Soft_Reset(void)
@@ -35,9 +43,8 @@ int main(void)
 	//初始化系统定时器
 	SysTick_Init();
 	
-	GPS_Config();
-  
-	while(1);
+	GPS_Config(); 
+	 
 	
 	printf("\r\n\r\n");
 	printf("\r\n\r\n");
@@ -46,6 +53,11 @@ int main(void)
 	printf("\r\n********************************************************************\r\n");
 	printf("\r\n***********************GSM模块TCP收发示例程序***********************\r\n");
 	printf("\r\n********************************************************************\r\n");
+	
+	while(gsm_Reset()!=GSM_TRUE)
+	{ 
+		printf("\r\n>%d 正在等待GSM模块Reset。。。\r\n",index++);
+	}
 	
 	printf("\r\n>%d 正在等待GSM模块初始化。。。\r\n",index++);
 	while(gsm_init()!= GSM_TRUE)
@@ -135,23 +147,12 @@ int main(void)
 	
 	printf ("\r\n>%d 开始发送第三条数据",index++);
 	
-	while(1)
+//	while(1)
 	{ 
 		GSM_DELAY(2000);
 		 
-		char arr1[512];
-		int i=0;
-		for(i=0;i<512;i++)
-		{
-			arr1[i] ='\0';
-		}
-		for(i=0;i<511;i++)
-		{
-			arr1[i]=gps_rbuff[i];
-		}
-		 
 		
-		if(gsm_gprs_send2(arr1) != GSM_TRUE)
+		if(gsm_gprs_send_GpsCmd(gps_rbuff_BDGSV) != GSM_TRUE)
 		{
 			printf("\r\n>TCP发送数据失败，请检测正确设置各个模块 XXXXXXXXXXXXXXX");
 			GSM_DELAY(1000);
@@ -163,8 +164,7 @@ int main(void)
 			GSM_DELAY(1000);
 			gsm_gprs_shut_close();
 			while(1);
-		}
-		
+		}		
 	}
 	
 	
