@@ -50,7 +50,8 @@ uint8_t gsm_cmd_check(char *reply)
 		GSM_DEBUG("返回值最后匹配成功 GSM_TRUE");
 		return GSM_TRUE;
 	}
-		GSM_DEBUG("返回值匹配失败 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX GSM_FALSE");
+		
+//	GSM_DEBUG("返回值匹配失败 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX GSM_FALSE");
 	return GSM_FALSE; //跳出循环表示比较完毕后没有相同的数据
 	
 }
@@ -72,22 +73,14 @@ uint8_t gsm_cmd(char *cmd,char *reply,uint32_t waittime)
 	return gsm_cmd_check(reply); //对接收数据进行处理
 }
 
-
+//重启设备
 uint8_t gsm_Reset(void)
-{
-	char *redata;
-	uint8_t len;
-	
+{ 
 	GSM_CLEAN_RX(); //清空接收缓冲区数据 
 	GSM_USART_Config(); //初始化串口
 	 
-	if(gsm_cmd("ATE1&W\r","OK",1000) != GSM_TRUE)
-		return GSM_FALSE;
-	
-	redata = GSM_RX(len);
-	 
-	if(len == 0)
-		return GSM_FALSE;
+	if(gsm_cmd("ATE0&W\r","OK",1000) != GSM_TRUE)
+		return GSM_FALSE; 
 	else
 		return GSM_TRUE;
 }

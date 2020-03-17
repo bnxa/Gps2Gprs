@@ -6,6 +6,16 @@
 #include "bsp_gps_usart.h"
 
 
+//调试信息开关
+#define DEBUG_ON 1 
+#define DEBUG(fmt,arg...) do{\
+																	if(DEBUG_ON)\
+																		printf("\r\n"fmt,##arg);\
+																}while(0)
+
+
+																
+																
 #define		LOCALPORT "2000"
 #define		SERVERIP	"28d77e1773.zicp.vip"
 #define		SERVERPORT	"37164"
@@ -23,6 +33,8 @@ extern uint8_t gps_rbuff_GNRMC[GPS_GNRMC_SIZE];	//推荐定位信息
 extern uint8_t gps_rbuff_GNVTG[GPS_GNVTG_SIZE];	//地面速度信息
 extern uint8_t gps_rbuff_GNGLL[GPS_GNGLL_SIZE];	//大地坐标信息
 extern uint8_t gps_rbuff_GNZDA[GPS_GNZDA_SIZE];	//当前时间(UTC 1 )信息 
+
+
 
 //系统软件复位
 void Soft_Reset(void)
@@ -46,158 +58,136 @@ int main(void)
 	GPS_Config(); 
 	 
 	
-	printf("\r\n\r\n");
-	printf("\r\n\r\n");
-	printf("\r\n\r\n");
-	printf("\r\n\r\n");
-	printf("\r\n********************************************************************\r\n");
-	printf("\r\n***********************GSM模块TCP收发示例程序***********************\r\n");
-	printf("\r\n********************************************************************\r\n");
+	DEBUG();
+	DEBUG();
+	DEBUG();
+	DEBUG();
+	DEBUG("\r\n********************************************************************\r\n");
+	DEBUG("\r\n***********************GSM模块TCP收发示例程序***********************\r\n");
+	DEBUG("\r\n********************************************************************\r\n");
 	
+	DEBUG(">%d 正在等待GSM模块 重启设备 。。。\r\n",index++);
 	while(gsm_Reset()!=GSM_TRUE)
 	{ 
-		printf("\r\n>%d 正在等待GSM模块Reset。。。\r\n",index++);
+		DEBUG(">%d 重启设备失败 ，正在等待GSM模块 重启设备。。。\r\n",index++);
 	}
 	
-	printf("\r\n>%d 正在等待GSM模块初始化。。。\r\n",index++);
+	DEBUG(">%d 正在等待GSM模块初始化。。。\r\n",index++);
 	while(gsm_init()!= GSM_TRUE)
 	{
-		printf("\r\n模块响应测试不正常！!");
-		printf("\r\n若模块相应一直不正常，请检查模块连接线和电源");
+		DEBUG("\r\n模块响应测试不正常！!");
+		DEBUG("\r\n若模块相应一直不正常，请检查模块连接线和电源");
 	}
 	
-	printf("\r\n>%d 正在检测电话卡。。。\r\n",index++);
+	DEBUG(">%d 正在检测电话卡。。。\r\n",index++);
 	while(IsInsertCard() != GSM_TRUE)
 	{
 		if(++testCard>20)
 		{
-			printf("\r\n检测不到电话卡，请断电后重新插入电话卡\r\n");
+			DEBUG("\r\n检测不到电话卡，请断电后重新插入电话卡\r\n");
 		}
 		GSM_DELAY(1000);
 	}
 	GSM_DELAY(1000);
 	
 	//确认关闭之前的连接
-	printf("\r\n>%d 确认关闭之前的连接!",index++);
+	DEBUG(">%d 确认关闭之前的连接!",index++);
 	gsm_gprs_link_close();
 	
 	GSM_DELAY(1000);
 	
 	//确认关闭之前的场景
-	printf("\r\n>%d 确认关闭之前的场景!",index++);
+	DEBUG(">%d 确认关闭之前的场景!",index++);
 	gsm_gprs_shut_close();
  
 	//重新初始化GPRS
-	printf("\r\n>%d 重新初始化GPRS!",index++);
+	DEBUG(">%d 重新初始化GPRS!",index++);
 	if(gsm_gprs_init()!= GSM_TRUE) //gprs初始化环境
 	{
-		printf("\r\n初始化GPRS失败，请重新给模块上电并复位开发板");
+		DEBUG("\r\n初始化GPRS失败，请重新给模块上电并复位开发板");
 		while(1);
 	}
 	
-	printf("\r\n>%d 尝试建立TCP链接，请耐心等待。。。",index++);
+	DEBUG(">%d 尝试建立TCP链接，请耐心等待。。。",index++);
 	
 	if(gsm_gprs_tcp_link(LOCALPORT,SERVERIP,SERVERPORT) != GSM_TRUE)
 	{
-		printf("\r\n TCP链接失败，请检测正确设置各个模块 XXXXXXXXXXXXXXX");
+		DEBUG("\r\n TCP链接失败，请检测正确设置各个模块 XXXXXXXXXXXXXXX");
 		GSM_DELAY(1000);
-		printf("\r\n IP链接断开");
+		DEBUG("\r\n IP链接断开");
 		GSM_DELAY(1000);
 		gsm_gprs_link_close();
 		
-		printf("\r\n 关闭场景");
+		DEBUG("\r\n 关闭场景");
 		GSM_DELAY(1000);
 		gsm_gprs_shut_close();
-		printf("\r\n ********5s后自动重启**********");
+		DEBUG("\r\n ********5s后自动重启**********");
 		GSM_DELAY(5000);
 		Soft_Reset();
 	}
 	
-	printf("\r\n>%d 连接成功，尝试发送数据。。。",index++);
+	DEBUG(">%d 连接成功，尝试发送数据。。。",index++);
 	if(gsm_gprs_send(TESTBUFF1) != GSM_TRUE)
 	{
-		printf("\r\n TCP发送数据失败，请检测正确设置各个模块 XXXXXXXXXXXXXXX");
+		DEBUG("\r\n TCP发送数据失败，请检测正确设置各个模块 XXXXXXXXXXXXXXX");
 		GSM_DELAY(1000);
-		printf("\r\n IP链接断开");
+		DEBUG("\r\n IP链接断开");
 		GSM_DELAY(1000);
 		gsm_gprs_link_close();
 		
-		printf("\r\n 关闭场景");
+		DEBUG("\r\n 关闭场景");
 		GSM_DELAY(1000);
 		gsm_gprs_shut_close();
 		while(1);
 	}
 	
-	printf("\r\n>%d 尝试发送第二条数据。。。",index++);
+	DEBUG(">%d 尝试发送第二条数据。。。",index++);
 	if(gsm_gprs_send(TESTBUFF2) != GSM_TRUE)
 	{
-		printf("\r\n>TCP发送数据失败，请检测正确设置各个模块 XXXXXXXXXXXXXXX");
+		DEBUG("\r\n>TCP发送数据失败，请检测正确设置各个模块 XXXXXXXXXXXXXXX");
 		GSM_DELAY(1000);
-		printf("\r\n IP链接断开");
+		DEBUG("\r\n IP链接断开");
 		GSM_DELAY(1000);
 		gsm_gprs_link_close();
 		
-		printf("\r\n 关闭场景");
+		DEBUG("\r\n 关闭场景");
 		GSM_DELAY(1000);
 		gsm_gprs_shut_close();
 		while(1);
 	}
-	printf ("\r\n>%d 发送第二条数据成功",index++);
+	DEBUG(">%d 发送第二条数据成功",index++);
 	
 	
-	printf ("\r\n>%d 开始发送第三条数据",index++);
-	
-//	while(1)
-	{ 
-		GSM_DELAY(2000);
-		 
+	DEBUG(">%d 开始发送第三条数据",index++);
+	 
 		
-		if(gsm_gprs_send_GpsCmd(gps_rbuff_BDGSV) != GSM_TRUE)
-		{
-			printf("\r\n>TCP发送数据失败，请检测正确设置各个模块 XXXXXXXXXXXXXXX");
-			GSM_DELAY(1000);
-			printf("\r\n IP链接断开");
-			GSM_DELAY(1000);
-			gsm_gprs_link_close();
-			
-			printf("\r\n 关闭场景");
-			GSM_DELAY(1000);
-			gsm_gprs_shut_close();
-			while(1);
-		}		
-	}
-	
-	
-	
-	printf("\r\n>%d 已准备好接受远程数据，可使用网络调试助手发送数据",index++);
-	GSM_CLEAN_RX();
-	
-	while(1)
+	GSM_DELAY(2000);
+		 
+	DEBUG("\r\n %s",gps_rbuff_BDGSV);
+	if(gsm_gprs_send_GpsCmd(gps_rbuff_BDGSV) != GSM_TRUE)
 	{
-		if((timecount>=50) && (timestop!=0xFF))
-		{
-			if(PostGPRS()!=GSM_TRUE)
-				timestop++;
-			else
-				timestop=0;
-			timecount = 0;			
-		}
-		if(timestop == 120) //60s
-		{
-			printf("\r\n长时间无通讯，即将关闭网络");
-			printf("\r\nIP连接断开");
-			GSM_DELAY(100);
-			gsm_gprs_link_close();
-			
-			printf("\r\n关闭场景");
-			GSM_DELAY(100);
-			gsm_gprs_shut_close();
-			
-			GSM_DELAY(1000);
-			timestop = 0xFF;			
-		}
-		timecount++;
-		GSM_DELAY(10);
-	}
+		DEBUG("\r\n>TCP发送数据失败，请检测正确设置各个模块 XXXXXXXXXXXXXXX");
+		GSM_DELAY(1000);
+		DEBUG("\r\n IP链接断开");
+		GSM_DELAY(1000);
+		gsm_gprs_link_close();
+		
+		DEBUG("\r\n 关闭场景");
+		GSM_DELAY(1000);
+		gsm_gprs_shut_close();
+		while(1);
+	}		 
+
+	GSM_DELAY(10000);
+ 
+	DEBUG("\r\n即将关闭网络");
+	DEBUG("\r\nIP连接断开");
+	GSM_DELAY(100);
+	gsm_gprs_link_close();
+	
+	DEBUG("\r\n关闭场景");
+	GSM_DELAY(100);
+	gsm_gprs_shut_close();
+ 
 	
 }

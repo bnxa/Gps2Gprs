@@ -110,7 +110,7 @@ static void GPS_DMA_Config(void)
 	//内存数据单位
 	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
 	//DMA模式：不断循环
-	DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;// DMA_Mode_Circular; //
+	DMA_InitStructure.DMA_Mode =  DMA_Mode_Circular; //DMA_Mode_Normal;//
 	//优先级 中
 	DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;
 	//禁用FIFO

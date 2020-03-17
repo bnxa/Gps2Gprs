@@ -42,7 +42,7 @@ typedef enum{
 #define GSM_ERROR(fmt,arg...) printf("<<-GSM-ERROR->>",##arg)
 #define GSM_DEBUG(fmt,arg...) do{\
 																	if(GSM_DEBUG_ON)\
-																		printf("\r\n<<-GSM-DEBUG->> [%d]"fmt,__LINE__,##arg);\
+																		printf("\r\n"fmt,##arg);\
 																}while(0)
 
 																

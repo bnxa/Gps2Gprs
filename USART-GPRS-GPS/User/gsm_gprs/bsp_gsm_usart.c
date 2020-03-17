@@ -5,7 +5,7 @@
 
 //中断缓存串口数据
 #define UART_BUFF_SIZE	512
-volatile uint8_t uart_p = 0;
+volatile uint16_t uart_p = 0;
 uint8_t  uart_buff[UART_BUFF_SIZE];
 
 void bsp_GSM_USART_IRQHandler(void)
