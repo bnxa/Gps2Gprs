@@ -6,6 +6,11 @@
 #include "bsp_gsm_gprs.h"
 #include "bsp_gsm_usart.h"
 
+#define IMEI_BUFF_SIZE 20
+char imei_buff[IMEI_BUFF_SIZE];
+#define PHONE_BUFF_SIZE 20
+char phone_buff[PHONE_BUFF_SIZE];
+
 
 //0成功
 //1失败
@@ -19,7 +24,7 @@ uint8_t gsm_cmd_check(char *reply)
 	
 	redata = GSM_RX(len);
 	*(redata+len)='\0';
-	GSM_DEBUG("返回数据 <---\r\n---------------\r\n%s---------------",redata);
+	GSM_DEBUG("返回:<---\r\n%s",redata);
 //	GSM_DEBUG("返回长度:=%d",len);
 //	GSM_DEBUG("匹配字符串:=%s,长度:=%d",reply,strlen(reply));
 	
@@ -30,7 +35,7 @@ uint8_t gsm_cmd_check(char *reply)
 //		GSM_DEBUG("redata[%d]:=%c,%X,n:=%d,off:=%d,n+off:=%d",n+off,redata[n+off],redata[n+off],n,off,n+off);
 		if(reply[n] == 0)  //数据为空或者比较完毕
 		{
-			GSM_DEBUG("返回值[%s]匹配成功  GSM_TRUE",reply);
+			GSM_DEBUG("成功！");
 			return GSM_TRUE;
 		}
 		
@@ -47,11 +52,11 @@ uint8_t gsm_cmd_check(char *reply)
 	
 	if(reply[n]==0) //刚好匹配完毕
 	{
-		GSM_DEBUG("返回值最后匹配成功 GSM_TRUE");
+		GSM_DEBUG("返回值[%s]最后匹配成功 GSM_TRUE",reply);
 		return GSM_TRUE;
 	}
 		
-//	GSM_DEBUG("返回值匹配失败 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX GSM_FALSE");
+	GSM_DEBUG("返回错误，应返回[%s]",reply);
 	return GSM_FALSE; //跳出循环表示比较完毕后没有相同的数据
 	
 }
@@ -63,7 +68,7 @@ uint8_t gsm_cmd(char *cmd,char *reply,uint32_t waittime)
 	GSM_DEBUG_FUNC();
 	GSM_CLEAN_RX();   //清空接受缓冲区数据
 	GSM_TX(cmd);  		//发送命令
-	GSM_DEBUG("发送命令:--->%s",cmd);
+	GSM_DEBUG("\r\n发送命令:--->%s",cmd);
 	if(reply == 0)    //不需要接收数据
 	{
 		return GSM_TRUE;
@@ -95,8 +100,7 @@ uint8_t gsm_init(void)
 	
 	GSM_DEBUG_FUNC();
 	
-	GSM_CLEAN_RX(); //清空接收缓冲区数据 
-	GSM_USART_Config(); //初始化串口
+	GSM_CLEAN_RX(); //清空接收缓冲区数据  
 	
 	if(gsm_cmd("AT+CGMM\r","OK",1000) != GSM_TRUE)
 		return GSM_FALSE;
@@ -115,14 +119,86 @@ uint8_t gsm_init(void)
 		return GSM_FALSE;
 }
 
+//获取IMEI号
+uint8_t GetIMEI(void)
+{
+	char *redata;
+	uint8_t len;
+	memset(imei_buff,0,IMEI_BUFF_SIZE);
+	
+	GSM_CLEAN_RX(); //清空接收缓冲区数据  
+	
+	if(gsm_cmd("AT+GSN\r","OK",500) != GSM_TRUE)
+		return GSM_FALSE;
+	
+	redata = GSM_RX(len);
+	
+	int fBegin = 0;
+	int fEnd = 0;
+	for(int i=0;i<len;i++)
+	{
+		if(redata[i]=='\n')
+			fBegin = i++;
+		if((redata[i] == '\r') && (fBegin > 0))
+		{
+			fEnd = i;
+			len = fEnd-fBegin-1;
+			if(len>=15)
+			{
+				for(int m=0;m<len;m++)
+				{
+					imei_buff[m]=redata[m+1+fBegin];
+				}
+				
+				GSM_DEBUG(" >> 获取IMEI成功： %s 长度：%d",imei_buff,strlen(imei_buff));
+				return GSM_TRUE;
+			} 
+		}
+	}
+	
+	return GSM_FALSE;
+}
+
 //检测是否有卡 
 // 0 成功
 // 1 失败 
 uint8_t IsInsertCard(void)
 {
+	char *redata;
+	uint8_t len;
+	memset(phone_buff,0,PHONE_BUFF_SIZE);
+	
 	GSM_DEBUG_FUNC();
   GSM_CLEAN_RX();
-	return gsm_cmd("AT+CNUM\r","OK",1000);
+	if(gsm_cmd("AT+CNUM\r","OK",500) != GSM_TRUE)
+			return GSM_FALSE;
+	
+	redata = GSM_RX(len);
+	int fBegin =0; 
+	
+	for(int i=0;i<len;i++)
+	{
+		if(redata[i]==',')
+		{
+			if(redata[++i] == '"')
+			{
+				fBegin = ++i;
+			}
+		}
+		if((redata[i]=='"') && (fBegin>0))
+		{
+			if(i-fBegin>=11)
+			{
+				for(int m=0;m<i-fBegin;m++)
+				{
+					phone_buff[m]=redata[m+fBegin];
+				}
+				GSM_DEBUG(" >> 获取手机号成功：%s 长度：%d",phone_buff,strlen(phone_buff));
+				return GSM_TRUE;
+			}
+		} 
+	}
+	return GSM_TRUE;
 }
 
 
@@ -134,7 +210,7 @@ uint8_t gsm_gprs_link_close(void)
 	GSM_DEBUG_FUNC();
 	
 	GSM_CLEAN_RX();
-	if(gsm_cmd("AT+CIPCLOSE=1\r","OK",200) != GSM_TRUE)
+	if(gsm_cmd("AT+CIPCLOSE=1\r","CLOSE OK",200) != GSM_TRUE)
 	{
 		return GSM_FALSE;
 	}
@@ -151,7 +227,10 @@ uint8_t gsm_gprs_shut_close(void)
 	
 	GSM_CLEAN_RX();
 	gsm_cmd("AT+CIPSHUT\r",0,0);
-	while(gsm_cmd_check("OK") != GSM_TRUE)
+	
+	GSM_DELAY(200); //延时
+	
+	while(gsm_cmd_check("SHUT OK") != GSM_TRUE)
 	{
 		if(++check_time>50)
 			return GSM_FALSE;
@@ -221,7 +300,7 @@ uint8_t gsm_gprs_tcp_link(char *localport,char *serverip,char *serverport)
 		{
 			return GSM_FALSE;
 		}
-		GSM_DELAY(100);
+		GSM_DELAY(1000);
 	}
 	return GSM_TRUE;
 }
@@ -255,7 +334,7 @@ uint8_t gsm_gprs_udp_link(char *localport,char *serverip,char *serverport)
 		{
 			return GSM_FALSE;
 		}
-		GSM_DELAY(100);
+		GSM_DELAY(1000);
 	}
 	return GSM_TRUE;
 }
@@ -337,6 +416,8 @@ uint8_t gsm_gprs_send_GpsCmd(uint8_t *str)
 //成功				GSM_TRUE
 uint8_t PostGPRS(void)
 {
+	
+	
 	char *redata;
 	uint8_t len;
 	
@@ -351,3 +432,9 @@ uint8_t PostGPRS(void)
 
 	return GSM_TRUE;	
 }
+
+//发送
+//uint8_t SendGpsData()
+//{
+//	
+//}

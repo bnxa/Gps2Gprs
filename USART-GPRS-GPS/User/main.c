@@ -5,7 +5,7 @@
 #include "bsp_gsm_gprs.h"
 #include "bsp_gps_usart.h"
 
-
+#define  SOCKETTYPE "UDP"
 //调试信息开关
 #define DEBUG_ON 1 
 #define DEBUG(fmt,arg...) do{\
@@ -20,8 +20,8 @@
 #define		SERVERIP	"28d77e1773.zicp.vip"
 #define		SERVERPORT	"37164"
 
-const char *TESTBUFF1="\r\n 1. SIM800A GSM模块TCP数据上传功能测试";
-const char *TESTBUFF2="\r\n 2. SIM800A GSM模块TCP数据上传功能测试";
+const char *TESTBUFF1="\r\n 1. SIM800A GSM模块数据上传功能测试--";
+const char *TESTBUFF2="\r\n 2. SIM800A GSM模块数据上传功能测试--";
 
 //static void Show_Message(void);
 extern uint8_t gps_rbuff[GPS_RBUFF_SIZE];
@@ -62,14 +62,20 @@ int main(void)
 	DEBUG();
 	DEBUG();
 	DEBUG();
-	DEBUG("\r\n********************************************************************\r\n");
-	DEBUG("\r\n***********************GSM模块TCP收发示例程序***********************\r\n");
-	DEBUG("\r\n********************************************************************\r\n");
+	DEBUG("\r\n****************************************************************************************************\r\n");
+	DEBUG("\r\n***********************GSM模块%s收发示例程序*******************************************************\r\n",SOCKETTYPE);
+	DEBUG("\r\n****************************************************************************************************\r\n");
 	
 	DEBUG(">%d 正在等待GSM模块 重启设备 。。。\r\n",index++);
 	while(gsm_Reset()!=GSM_TRUE)
 	{ 
 		DEBUG(">%d 重启设备失败 ，正在等待GSM模块 重启设备。。。\r\n",index++);
+	}
+	
+	DEBUG(">%d 获取设备IMEI号 \r\n",index++);
+	while(GetIMEI()!=GSM_TRUE)
+	{
+		DEBUG(">%d 获取设备IMEI号失败！",index++);
 	}
 	
 	DEBUG(">%d 正在等待GSM模块初始化。。。\r\n",index++);
@@ -108,11 +114,11 @@ int main(void)
 		while(1);
 	}
 	
-	DEBUG(">%d 尝试建立TCP链接，请耐心等待。。。",index++);
+	DEBUG(">%d 尝试建立%s链接，请耐心等待。。。",index++,SOCKETTYPE);
 	
-	if(gsm_gprs_tcp_link(LOCALPORT,SERVERIP,SERVERPORT) != GSM_TRUE)
+	if(gsm_gprs_udp_link(LOCALPORT,SERVERIP,SERVERPORT) != GSM_TRUE)
 	{
-		DEBUG("\r\n TCP链接失败，请检测正确设置各个模块 XXXXXXXXXXXXXXX");
+		DEBUG("\r\n %s链接失败，请检测正确设置各个模块 XXXXXXXXXXXXXXX",SOCKETTYPE);
 		GSM_DELAY(1000);
 		DEBUG("\r\n IP链接断开");
 		GSM_DELAY(1000);
