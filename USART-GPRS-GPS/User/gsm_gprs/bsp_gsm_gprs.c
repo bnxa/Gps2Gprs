@@ -5,12 +5,21 @@
 #include "stm32f4xx.h"
 #include "bsp_gsm_gprs.h"
 #include "bsp_gsm_usart.h"
+ 
+uint8_t imei_buff[IMEI_BUFF_SIZE]; 			//存放IMEI号的数组
+uint8_t phone_buff[PHONE_BUFF_SIZE]; 		//存放电话号码数组
+uint8_t gprs_data_buff[GPRS_DATA_SIZE];	//存放socket要发送的数据的数组
 
-#define IMEI_BUFF_SIZE 20
-char imei_buff[IMEI_BUFF_SIZE];
-#define PHONE_BUFF_SIZE 20
-char phone_buff[PHONE_BUFF_SIZE];
 
+extern uint8_t gps_rbuff[GPS_RBUFF_SIZE];
+extern uint8_t gps_rbuff_BDGSV[GPS_BDGSV_SIZE];	//可见北斗卫星信息 
+extern uint8_t gps_rbuff_GNGGA[GPS_GNGGA_SIZE]; //GPS/北斗定位信息
+extern uint8_t gps_rbuff_GNGSA[GPS_GNGSA_SIZE]; //当前卫星信息
+extern uint8_t gps_rbuff_GPGSV[GPS_GPGSV_SIZE];	//可见 GPS 卫星信息 
+extern uint8_t gps_rbuff_GNRMC[GPS_GNRMC_SIZE];	//推荐定位信息
+extern uint8_t gps_rbuff_GNVTG[GPS_GNVTG_SIZE];	//地面速度信息
+extern uint8_t gps_rbuff_GNGLL[GPS_GNGLL_SIZE];	//大地坐标信息
+extern uint8_t gps_rbuff_GNZDA[GPS_GNZDA_SIZE];	//当前时间(UTC 1 )信息 
 
 //0成功
 //1失败
@@ -84,7 +93,7 @@ uint8_t gsm_Reset(void)
 	GSM_CLEAN_RX(); //清空接收缓冲区数据 
 	GSM_USART_Config(); //初始化串口
 	 
-	if(gsm_cmd("ATE0&W\r","OK",1000) != GSM_TRUE)
+	if(gsm_cmd("ATE1&W\r","OK",1000) != GSM_TRUE)
 		return GSM_FALSE; 
 	else
 		return GSM_TRUE;
@@ -150,7 +159,7 @@ uint8_t GetIMEI(void)
 					imei_buff[m]=redata[m+1+fBegin];
 				}
 				
-				GSM_DEBUG(" >> 获取IMEI成功： %s 长度：%d",imei_buff,strlen(imei_buff));
+				GSM_DEBUG(" >> 获取IMEI成功： %s 长度：%d",imei_buff,strlen((char*)imei_buff));
 				return GSM_TRUE;
 			} 
 		}
@@ -193,7 +202,7 @@ uint8_t IsInsertCard(void)
 				{
 					phone_buff[m]=redata[m+fBegin];
 				}
-				GSM_DEBUG(" >> 获取手机号成功：%s 长度：%d",phone_buff,strlen(phone_buff));
+				GSM_DEBUG(" >> 获取手机号成功：%s 长度：%d",phone_buff,strlen((char*)phone_buff));
 				return GSM_TRUE;
 			}
 		} 
@@ -296,11 +305,11 @@ uint8_t gsm_gprs_tcp_link(char *localport,char *serverip,char *serverport)
 	printf("\r\n >> 检测是否建立连接");
 	while(gsm_cmd_check("CONNECT OK") != GSM_TRUE)
 	{
-		if(++testConnect>200) //最长等待20秒
+		if(++testConnect>10) //最长等待20秒
 		{
 			return GSM_FALSE;
 		}
-		GSM_DELAY(1000);
+		GSM_DELAY(2000);
 	}
 	return GSM_TRUE;
 }
@@ -330,11 +339,11 @@ uint8_t gsm_gprs_udp_link(char *localport,char *serverip,char *serverport)
 	printf("\r\n >> 检测是否建立连接");
 	while(gsm_cmd_check("CONNECT OK") != GSM_TRUE)
 	{
-		if(++testConnect>200)//最长等待20秒
+		if(++testConnect>10)//最长等待20秒
 		{
 			return GSM_FALSE;
 		}
-		GSM_DELAY(1000);
+		GSM_DELAY(2000); 
 	}
 	return GSM_TRUE;
 }
@@ -385,7 +394,7 @@ uint8_t gsm_gprs_send_GpsCmd(uint8_t *str)
 	
 	GSM_CLEAN_RX();
 	
-	if(gsm_cmd("AT+CIPSEND\r",">",500) == GSM_TRUE)
+	if(gsm_cmd("AT+CIPSEND\r",">",200) == GSM_TRUE)
 	{
 		GSM_USART_printf("%s",str);
 		GSM_DEBUG("发送字符串:=“%s”",str);
@@ -396,11 +405,11 @@ uint8_t gsm_gprs_send_GpsCmd(uint8_t *str)
 		printf("\r\n >> 检测是否发送完成");
 		while(gsm_cmd_check("SEND OK") != GSM_TRUE)
 		{
-			if(++testSend > 200)//最长等待20秒
+			if(++testSend > 20)//最长等待20秒
 			{
 				goto gprs_send_failure;
 			}
-			GSM_DELAY(100);
+			GSM_DELAY(1000);
 		}
 		return GSM_TRUE;		
 	}
@@ -433,8 +442,32 @@ uint8_t PostGPRS(void)
 	return GSM_TRUE;	
 }
 
-//发送
-//uint8_t SendGpsData()
-//{
-//	
-//}
+//获取GPRS数据
+uint8_t get_gprs_data(void)
+{
+	uint16_t len =0;
+	uint16_t len3 =0;
+	//初始化发送数据缓冲区
+	memset(gprs_data_buff,0,GPRS_DATA_SIZE);
+	
+	//拼接IMEI号
+	strcat((char*)gprs_data_buff,"$");
+	strcat((char*)gprs_data_buff,(char*)imei_buff);
+	len = strlen((char*) gprs_data_buff);
+	GSM_DEBUG("gprs_data_buff:=%s , len=%d",gprs_data_buff,len); 
+	
+	//拼接手机号
+	strcat((char*)gprs_data_buff,"$");
+	strcat((char*)gprs_data_buff,(char*)phone_buff);
+	len = strlen((char*) gprs_data_buff);
+	GSM_DEBUG("gprs_data_buff:=%s , len=%d",gprs_data_buff,len); 
+	
+	//拼接GPS数据
+	strcat((char*)gprs_data_buff,(char*)gps_rbuff_GNRMC);
+	len3 = strlen((char*) gprs_data_buff);
+	GSM_DEBUG("gprs_data_buff:=%s , len=%d",gprs_data_buff,len3);
+	if(len3 > len)
+		return GSM_TRUE;
+	else
+		return GSM_FALSE; 
+}

@@ -4,6 +4,7 @@
 #include "stm32f4xx.h"
 #include "bsp_gsm_usart.h"
 #include "bsp_SysTick.h"
+#include "bsp_gps_usart.h"
 
 typedef enum{
 	GSM_TRUE,
@@ -18,6 +19,11 @@ typedef enum{
 	GSM_DATA_CANCLE	= 0x1B,	//发送数据（Esc)
 	
 }gsm_cmd_end_e;
+
+//数据缓冲区大小
+#define IMEI_BUFF_SIZE 20
+#define PHONE_BUFF_SIZE 20
+#define GPRS_DATA_SIZE 512
 
 //								指令					正常返回
 //本机号码				AT+NUM\r			+CNUM: "","1322222222",129,7，4
@@ -84,6 +90,7 @@ uint8_t gsm_gprs_send_GpsCmd(uint8_t *str);
 
 uint8_t PostGPRS(void);
 	
-
+//获取GPRS数据
+uint8_t get_gprs_data(void);
 	
 #endif
