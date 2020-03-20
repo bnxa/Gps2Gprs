@@ -7,26 +7,26 @@
 
 void LED_GPIO_Config(void);
 
-#define LED_R_GPIO_PIN 	GPIO_Pin_10
+#define LED_R_GPIO_PIN 	GPIO_Pin_11
 #define LED_R_GPIO_PORT	GPIOH
-#define LED_R_GPIO_CLK	RCC_AHB1Periph_GPIOH
+#define LED_R_GPIO_CLK	RCC_AHB1Periph_GPIOA
 
 //引脚定义
 /*******************************************************/
 //R 红色灯
-#define LED1_PIN                  GPIO_Pin_10                 
-#define LED1_GPIO_PORT            GPIOH                      
-#define LED1_GPIO_CLK             RCC_AHB1Periph_GPIOH
+#define LED1_PIN                  GPIO_Pin_11
+#define LED1_GPIO_PORT            GPIOA                      
+#define LED1_GPIO_CLK             RCC_AHB1Periph_GPIOA
 
 //G 绿色灯
-#define LED2_PIN                  GPIO_Pin_11                 
-#define LED2_GPIO_PORT            GPIOH                      
-#define LED2_GPIO_CLK             RCC_AHB1Periph_GPIOH
+#define LED2_PIN                  GPIO_Pin_12                 
+#define LED2_GPIO_PORT            GPIOA                      
+#define LED2_GPIO_CLK             RCC_AHB1Periph_GPIOA
 
 //B 蓝色灯
-#define LED3_PIN                  GPIO_Pin_12                 
-#define LED3_GPIO_PORT            GPIOH                       
-#define LED3_GPIO_CLK             RCC_AHB1Periph_GPIOH
+#define LED3_PIN                  GPIO_Pin_13                
+#define LED3_GPIO_PORT            GPIOA                       
+#define LED3_GPIO_CLK             RCC_AHB1Periph_GPIOA
 /************************************************************/
 
 

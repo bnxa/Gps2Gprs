@@ -91,13 +91,45 @@ uint8_t gsm_cmd(char *cmd,char *reply,uint32_t waittime)
 uint8_t gsm_Reset(void)
 { 
 	GSM_CLEAN_RX(); //清空接收缓冲区数据 
-	GSM_USART_Config(); //初始化串口
 	 
-	if(gsm_cmd("ATE1&W\r","OK",1000) != GSM_TRUE)
+	if(gsm_cmd("ATE0&W\r","OK",1000) != GSM_TRUE)
 		return GSM_FALSE; 
 	else
 		return GSM_TRUE;
 }
+
+//查询信号强度
+uint8_t gsm_sigin(void)
+{
+	GSM_CLEAN_RX(); //清空接收缓冲区数据  
+	 
+	if(gsm_cmd("AT+CSQ\r","OK",2000) != GSM_TRUE)
+		return GSM_FALSE; 
+	else
+		return GSM_TRUE;
+}
+ 
+
+//查询GPRS附着
+uint8_t gsm_has_gprs(void)
+{
+	GSM_CLEAN_RX(); //清空接收缓冲区数据  
+	 
+	if(gsm_cmd("AT+CGATT?\r","OK",200) != GSM_TRUE)
+		return GSM_FALSE; 
+	else
+	{ 
+		uint8_t len; 
+		char *redata;
+		
+		redata = GSM_RX(len); 
+		if(strstr(redata,"+CGATT: 1") != NULL)
+			return GSM_TRUE;
+		else
+			return GSM_FALSE;
+	}
+}
+
 
 //初始化并检测模块
 //0 成功
@@ -267,17 +299,20 @@ uint8_t gsm_gprs_init(void)
 	if(gsm_cmd("AT+CGDCONT=1,\"IP\",\"CMNET\"\r","OK",1000) != GSM_TRUE)
 		return GSM_FALSE;
 	
-	GSM_CLEAN_RX();
-	printf("\r\n >>3 激活GPRS功能 获取IP");
-	if(gsm_cmd("AT+CGATT=1\r","OK",1000) != GSM_TRUE)
-		return GSM_FALSE;
 	
+	if(gsm_has_gprs() == GSM_FALSE)
+	{
+		GSM_CLEAN_RX();
+		printf("\r\n >>3 激活GPRS功能 获取IP");
+		if(gsm_cmd("AT+CGATT=1\r","OK",2000) != GSM_TRUE)
+			return GSM_FALSE;
+	}
 	printf("\r\n >>4 设置模块连接方式为GPRS连接,接入点为“CMNET”");
 	GSM_CLEAN_RX();
 	if(gsm_cmd("AT+CIPCSGP=1,\"CMNET\"\r","OK",1000) != GSM_TRUE)
 		return GSM_FALSE;
 		
-	return GSM_TRUE;		
+	return GSM_TRUE;
 }
 
 

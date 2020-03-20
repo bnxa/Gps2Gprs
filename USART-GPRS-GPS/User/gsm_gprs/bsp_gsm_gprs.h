@@ -92,5 +92,7 @@ uint8_t PostGPRS(void);
 	
 //获取GPRS数据
 uint8_t get_gprs_data(void);
-	
+uint8_t gsm_sigin(void);
+uint8_t gsm_gprs_context(void);
+uint8_t gsm_has_gprs(void);
 #endif

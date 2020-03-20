@@ -20,8 +20,8 @@
 #define		SERVERIP	"28d77e1773.zicp.vip"
 #define		SERVERPORT	"37164"
 
-const char *TESTBUFF1="\r\n 1. SIM800A GSM模块数据上传功能测试--";
-const char *TESTBUFF2="\r\n 2. SIM800A GSM模块数据上传功能测试--";
+const char *TESTBUFF1="\r\n 1. SIM800A GSM模块GPS数据上传功能测试--";
+const char *TESTBUFF2="\r\n 2. SIM800A GSM模块GPS数据上传功能测试--";
 
 //static void Show_Message(void);
 
@@ -40,6 +40,9 @@ int main(void)
 	uint8_t testCard =0;
 	uint8_t index =0;
 	
+//	LED_GPIO_Config();
+//	LED1_ON;
+//	LED2_ON;
 	
  	/*配置USART*/
 	Debug_USART_Config(); 
@@ -48,6 +51,8 @@ int main(void)
 	
 	GPS_Config(); 
 	 
+	
+	GSM_USART_Config(); //初始化串口
 	
 	DEBUG();
 	DEBUG();
@@ -63,31 +68,40 @@ int main(void)
 		DEBUG(">%d 重启设备失败 ，正在等待GSM模块 重启设备。。。\r\n",index++);
 		GSM_DELAY(2000);
 	}
-	GSM_DELAY(10000);
+	GSM_DELAY(2000); 
+	
+	DEBUG(">%d 查询信号强度。。。",index++);
+	while(gsm_sigin() != GSM_TRUE)
+	{
+		DEBUG(">%d 查询信号强度失败 。。。\r\n",index++);
+		GSM_DELAY(2000);
+	}
 	DEBUG(">%d 获取设备IMEI号 \r\n",index++);
 	while(GetIMEI()!=GSM_TRUE)
-	{
+	{ 
 		DEBUG(">%d 获取设备IMEI号失败！",index++);
-	}
-	
+	} 
+	 
 	DEBUG(">%d 正在等待GSM模块初始化。。。\r\n",index++);
+ 
 	while(gsm_init()!= GSM_TRUE)
-	{
+	{ 
 		DEBUG("\r\n模块响应测试不正常！!");
 		DEBUG("\r\n若模块相应一直不正常，请检查模块连接线和电源");
-	}
-	
+	} 
+	 
 	DEBUG(">%d 正在检测电话卡。。。\r\n",index++);
+ 
 	while(IsInsertCard() != GSM_TRUE)
-	{
+	{ 
 		if(++testCard>20)
 		{
 			DEBUG("\r\n检测不到电话卡，请断电后重新插入电话卡\r\n");
 		}
 		GSM_DELAY(1000);
-	}
+	} 
 	GSM_DELAY(1000);
-	  
+	   
 	//确认关闭之前的连接
 	DEBUG(">%d 确认关闭之前的连接!",index++);
 	gsm_gprs_link_close();
@@ -97,20 +111,23 @@ int main(void)
 	//确认关闭之前的场景
 	DEBUG(">%d 确认关闭之前的场景!",index++);
 	gsm_gprs_shut_close();
- 
+     
+	
 	//重新初始化GPRS
 	DEBUG(">%d 重新初始化GPRS!",index++);
-	if(gsm_gprs_init()!= GSM_TRUE) //gprs初始化环境
-	{
+	while(gsm_gprs_init()!= GSM_TRUE) //gprs初始化环境
+	{ 
 		DEBUG("\r\n初始化GPRS失败，请重新给模块上电并复位开发板"); 
-		
-		while(1);
+		 
+		while(1); 
+		 
 	}
 	
 	DEBUG(">%d 尝试建立%s链接，请耐心等待。。。",index++,SOCKETTYPE);
 	
 	if(gsm_gprs_tcp_link(LOCALPORT,SERVERIP,SERVERPORT) != GSM_TRUE)
 	{
+		LED2_ON;
 		DEBUG("\r\n %s链接失败，请检测正确设置各个模块 XXXXXXXXXXXXXXX",SOCKETTYPE);
 		GSM_DELAY(1000);
 		DEBUG("\r\n IP链接断开");
@@ -124,10 +141,10 @@ int main(void)
 		GSM_DELAY(5000);
 		Soft_Reset();
 	}
-	
+	 
 	DEBUG(">%d 连接成功，尝试发送数据。。。",index++);
 	if(gsm_gprs_send(TESTBUFF1) != GSM_TRUE)
-	{
+	{ 
 		DEBUG("\r\n TCP发送数据失败，请检测正确设置各个模块 XXXXXXXXXXXXXXX");
 		GSM_DELAY(1000);
 		DEBUG("\r\n IP链接断开");
@@ -138,11 +155,11 @@ int main(void)
 		GSM_DELAY(1000);
 		gsm_gprs_shut_close();
 		while(1);
-	}
+	} 
 	
 	DEBUG(">%d 尝试发送第二条数据。。。",index++);
 	if(gsm_gprs_send(TESTBUFF2) != GSM_TRUE)
-	{
+	{ 
 		DEBUG("\r\n>TCP发送数据失败，请检测正确设置各个模块 XXXXXXXXXXXXXXX");
 		GSM_DELAY(1000);
 		DEBUG("\r\n IP链接断开");
@@ -166,11 +183,11 @@ int main(void)
 	while(1)
 	{  
 		while( get_gprs_data() == GSM_FALSE)
-		{
+		{ 
 			GSM_DELAY(1000);
 		}
 		if(gsm_gprs_send_GpsCmd(gprs_data_buff) != GSM_TRUE)
-		{
+		{ 
 			DEBUG("\r\n>TCP发送数据失败，请检测正确设置各个模块 XXXXXXXXXXXXXXX");
 			GSM_DELAY(1000);
 			DEBUG("\r\n IP链接断开");
