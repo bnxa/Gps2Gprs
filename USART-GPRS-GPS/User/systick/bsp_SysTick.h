@@ -2,12 +2,14 @@
 #define __SYSTICK_H
 
 #include "stm32f4xx.h"
+#include <stdio.h>
 
-#define Delay_ms(x) Delay_us(100*x); //单位毫秒ms
+
+#define Delay_ms(x) Delay_us(100*x); //单位毫秒ms 
 
 void TimingDelay_Decrement(void);
 void SysTick_Init(void);
-void Delay_us(__IO u32 nTime); 
+void Delay_us(__IO u32 nTime);
 
 
 

@@ -3,8 +3,7 @@
 //#include <stdarg.h>
 #include <string.h>
 #include "stm32f4xx.h"
-#include "bsp_gsm_gprs.h"
-#include "bsp_gsm_usart.h"
+#include "bsp_gsm_gprs.h" 
  
 uint8_t imei_buff[IMEI_BUFF_SIZE]; 			//存放IMEI号的数组
 uint8_t phone_buff[PHONE_BUFF_SIZE]; 		//存放电话号码数组
@@ -286,19 +285,22 @@ uint8_t gsm_gprs_shut_close(void)
 //成功 GSM_TRUE
 uint8_t gsm_gprs_init(void)
 {
+	int fIndex = 1;
+	
 	GSM_DEBUG_FUNC();
 	
 	printf("\r\n >>1 只GPRS工作类型");
-	GSM_CLEAN_RX();
-	
+	GSM_CLEAN_RX();	
 	if(gsm_cmd("AT+CGCLASS=\"B\"\r","OK",1000) != GSM_TRUE)
 		return GSM_FALSE;
+	LED1_Light_Fast(fIndex++);
 	
 	printf("\r\n >>2 定义PDP移动场景");
 	GSM_CLEAN_RX();
 	if(gsm_cmd("AT+CGDCONT=1,\"IP\",\"CMNET\"\r","OK",1000) != GSM_TRUE)
 		return GSM_FALSE;
 	
+	LED1_Light_Fast(fIndex++);
 	
 	if(gsm_has_gprs() == GSM_FALSE)
 	{
@@ -306,12 +308,23 @@ uint8_t gsm_gprs_init(void)
 		printf("\r\n >>3 激活GPRS功能 获取IP");
 		if(gsm_cmd("AT+CGATT=1\r","OK",2000) != GSM_TRUE)
 			return GSM_FALSE;
+		
+		
+		LED1_Light_Fast(fIndex++);
 	}
-	printf("\r\n >>4 设置模块连接方式为GPRS连接,接入点为“CMNET”");
+	else
+	{
+		LED1_Light_Fast(fIndex++);
+	}
+	
+	
+	printf("\r\n >>%d 设置模块连接方式为GPRS连接,接入点为“CMNET”",fIndex);
 	GSM_CLEAN_RX();
 	if(gsm_cmd("AT+CIPCSGP=1,\"CMNET\"\r","OK",1000) != GSM_TRUE)
-		return GSM_FALSE;
-		
+		return GSM_FALSE; 
+	LED1_Light_Fast(fIndex++);
+	
+	
 	return GSM_TRUE;
 }
 

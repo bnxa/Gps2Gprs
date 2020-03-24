@@ -3,9 +3,15 @@
 
 #include "stm32f4xx_gpio.h"
 #include "stm32f4xx_rcc.h"
+#include "bsp_SysTick.h"
 
+
+#define LED_DELAY(time)					Delay_ms(time)  //延时
 
 void LED_GPIO_Config(void);
+void LED1_LIGHT(uint8_t ccTimes);
+void LED1_Light_Fast(uint8_t ccTimes);
+void LED2_LIGHT(uint8_t ccTimes);
 
 #define LED_R_GPIO_PIN 	GPIO_Pin_11
 #define LED_R_GPIO_PORT	GPIOH
@@ -24,9 +30,9 @@ void LED_GPIO_Config(void);
 #define LED2_GPIO_CLK             RCC_AHB1Periph_GPIOA
 
 //B 蓝色灯
-#define LED3_PIN                  GPIO_Pin_13                
-#define LED3_GPIO_PORT            GPIOA                       
-#define LED3_GPIO_CLK             RCC_AHB1Periph_GPIOA
+//#define LED3_PIN                  GPIO_Pin_13                
+//#define LED3_GPIO_PORT            GPIOA                       
+//#define LED3_GPIO_CLK             RCC_AHB1Periph_GPIOA
 /************************************************************/
 
 
@@ -48,10 +54,10 @@ void LED_GPIO_Config(void);
 					else		\
 					GPIO_ResetBits(LED2_GPIO_PORT,LED2_PIN)
 
-#define LED3(a)	if (a)	\
-					GPIO_SetBits(LED3_GPIO_PORT,LED3_PIN);\
-					else		\
-					GPIO_ResetBits(LED3_GPIO_PORT,LED3_PIN)
+//#define LED3(a)	if (a)	\
+//					GPIO_SetBits(LED3_GPIO_PORT,LED3_PIN);\
+//					else		\
+//					GPIO_ResetBits(LED3_GPIO_PORT,LED3_PIN)
 
 /* 直接操作寄存器的方法控制IO */
 #define	digitalHi(p,i)			 {p->BSRRL=i;}		//设置为高电平
@@ -68,9 +74,9 @@ void LED_GPIO_Config(void);
 #define LED2_OFF			digitalHi(LED2_GPIO_PORT,LED2_PIN)
 #define LED2_ON				digitalLo(LED2_GPIO_PORT,LED2_PIN)
 
-#define LED3_TOGGLE		digitalToggle(LED3_GPIO_PORT,LED3_PIN)
-#define LED3_OFF			digitalHi(LED3_GPIO_PORT,LED3_PIN)
-#define LED3_ON				digitalLo(LED3_GPIO_PORT,LED3_PIN)
+//#define LED3_TOGGLE		digitalToggle(LED3_GPIO_PORT,LED3_PIN)
+//#define LED3_OFF			digitalHi(LED3_GPIO_PORT,LED3_PIN)
+//#define LED3_ON				digitalLo(LED3_GPIO_PORT,LED3_PIN)
 
 
 //红
@@ -86,40 +92,40 @@ void LED_GPIO_Config(void);
 					LED3_OFF
 
 //蓝
-#define LED_BLUE	\
-					LED1_OFF;\
-					LED2_OFF;\
-					LED3_ON
+//#define LED_BLUE	\
+//					LED1_OFF;\
+//					LED2_OFF;\
+//					LED3_ON
 
 					
 //黄(红+绿)					
 #define LED_YELLOW	\
 					LED1_ON;\
 					LED2_ON;\
-					LED3_OFF
+//					LED3_OFF
 //紫(红+蓝)
 #define LED_PURPLE	\
 					LED1_ON;\
 					LED2_OFF;\
-					LED3_ON
+//					LED3_ON
 
 //青(绿+蓝)
 #define LED_CYAN \
 					LED1_OFF;\
 					LED2_ON;\
-					LED3_ON
+//					LED3_ON
 					
 //白(红+绿+蓝)
 #define LED_WHITE	\
 					LED1_ON;\
 					LED2_ON;\
-					LED3_ON
+//					LED3_ON
 					
 //黑(全部关闭)
 #define LED_RGBOFF	\
 					LED1_OFF;\
 					LED2_OFF;\
-					LED3_OFF		
+//					LED3_OFF		
 
 
 

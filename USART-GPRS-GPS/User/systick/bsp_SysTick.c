@@ -1,6 +1,7 @@
 #include "bsp_SysTick.h"
 
-static __IO u32 TimingDelay;
+static __IO u32 TimingDelay; 
+
 /*
 启动系统定时器SysTick
 */
@@ -20,11 +21,12 @@ void SysTick_Init(void)
 void Delay_us(__IO u32 nTime)
 {
 	TimingDelay = nTime;
-	while(TimingDelay != 0);
+	while(TimingDelay != 0); 
 }
-
+ 
 void TimingDelay_Decrement(void)
 {
 	if(TimingDelay != 0x00)
 		TimingDelay--;
+	 
 }

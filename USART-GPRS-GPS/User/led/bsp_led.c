@@ -14,8 +14,9 @@ void LED_GPIO_Config(void)
 
 		/*开启LED相关的GPIO外设时钟*/
 		RCC_AHB1PeriphClockCmd ( LED1_GPIO_CLK|
-	                           LED2_GPIO_CLK|
-	                           LED3_GPIO_CLK, ENABLE); 
+	                           LED2_GPIO_CLK
+//	                           LED3_GPIO_CLK
+	, ENABLE); 
 
 		/*选择要控制的GPIO引脚*/															   
 		GPIO_InitStructure.GPIO_Pin = LED1_PIN;	
@@ -40,9 +41,50 @@ void LED_GPIO_Config(void)
     GPIO_Init(LED2_GPIO_PORT, &GPIO_InitStructure);	
     
     /*选择要控制的GPIO引脚*/															   
-		GPIO_InitStructure.GPIO_Pin = LED3_PIN;	
-    GPIO_Init(LED3_GPIO_PORT, &GPIO_InitStructure);	
+//		GPIO_InitStructure.GPIO_Pin = LED3_PIN;	
+//    GPIO_Init(LED3_GPIO_PORT, &GPIO_InitStructure);	
 		
 		/*关闭RGB灯*/
 		LED_RGBOFF;		
+}
+
+//LED1闪烁
+void LED1_LIGHT(uint8_t ccTimes)
+{ 
+		LED1_OFF;
+		LED_DELAY(300);
+	for(int i=0;i<ccTimes;i++)
+	{
+		LED1_ON;
+		LED_DELAY(300);
+		LED1_OFF;
+		LED_DELAY(300);
+	}
+}
+//LED1闪烁
+void LED1_Light_Fast(uint8_t ccTimes)
+{ 
+		LED1_OFF;
+		LED_DELAY(150);
+	for(int i=0;i<ccTimes;i++)
+	{
+		LED1_ON;
+		LED_DELAY(150);
+		LED1_OFF;
+		LED_DELAY(150);
+	}
+}
+
+//LED2闪烁
+void LED2_LIGHT(uint8_t ccTimes)
+{
+		LED2_OFF;
+		LED_DELAY(300);
+	for(int i=0;i<ccTimes;i++)
+	{
+		LED2_ON;
+		LED_DELAY(300);
+		LED2_OFF;
+		LED_DELAY(300);
+	}
 }
